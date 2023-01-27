@@ -2,8 +2,35 @@ import json
 import boto3
 import csv
 
-# a function to convert a json file to a csv file
-# keys in the json file are in the column names
+# lambda handler function
+
+
+def lambda_handler(event, context):
+    # TODO implement
+    s3 = boto3.client('s3')
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('employee')
+    # bucket = event['Records'][0]['s3']['bucket']['name']
+    # key = event['Records'][0]['s3']['object']['key']
+    bucket = 'employee-csv-bucket'
+    key = 'employee.csv'
+    csv_file = s3.get_object(Bucket=bucket, Key=key)
+    csv_data = csv_file['Body'].read().decode('utf-8')
+    employees = csv_data.split('\n')
+    for emp in employees:
+        print(emp)
+        emp_data = emp.split(',')
+        print(emp_data)
+        table.put_item(
+            Item={
+                'id': emp_data[0],
+                'name': emp_data[1],
+                'location': emp_data[2]
+            }
+        )
+
+    # a function to convert a json file to a csv file
+    # keys in the json file are in the column names
 
 
 def json_to_csv(json_file, csv_file):
