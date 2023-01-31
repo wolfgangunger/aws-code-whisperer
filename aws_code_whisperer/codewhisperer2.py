@@ -15,7 +15,8 @@ class MyStack(Stack):
 
         # create a sqs  queue
         queue = sqs.Queue(
-            self, "MyFirstQueue",
+            self,
+            "MyFirstQueue",
             visibility_timeout=Duration.seconds(300),
         )
         # create a sns topic
@@ -26,26 +27,24 @@ class MyStack(Stack):
         ec2 = ec2.Instance(self, "MyFirstEC2")
         # create a rds
         rds = rds.Instance(self, "MyFirstRDS")
+
         # create a role
-        role = iam.Role(self, "MyFirstRole",
-                        assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
+        role = iam.Role(
+            self, "MyFirstRole", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com")
+        )
         # create a policy
-        policy = iam.Policy(self, "MyFirstPolicy",
-                            statements=[
-                                iam.PolicyStatement(
-
-                                    effect=iam.Effect.ALLOW,
-                                    actions=["ec2:*"],
-
-                                    resources=["*"],
-                                    conditions={
-
-                                        "StringEquals": {
-                                            "ec2:Region": "us-east-1"
-                                        }
-                                    }
-                                )
-                            ])
+        policy = iam.Policy(
+            self,
+            "MyFirstPolicy",
+            statements=[
+                iam.PolicyStatement(
+                    effect=iam.Effect.ALLOW,
+                    actions=["ec2:*"],
+                    resources=["*"],
+                    conditions={"StringEquals": {"ec2:Region": "us-east-1"}},
+                )
+            ],
+        )
 
         # attach policy to role
         role.attach_inline_policy(policy)
@@ -55,11 +54,8 @@ class MyStack(Stack):
         ec2.role = role
         # add topic to queue
         queue.add_event_notification_attributes(
-
             sqs.QueueEventNotificationAttribute(
                 "All",
-
                 "true",
             )
         )
-        
